@@ -105,17 +105,16 @@ def get_transcript(video_id: str, languages=("en",)) -> Optional[str]:
     except (TranscriptsDisabled, NoTranscriptFound, VideoUnavailable):
         return None
     except Exception:
-        # transcript API occasionally raises other errors; return None for robustness
         return None
 
 
 if __name__ == "__main__":
-    # simple demo
-    sample_channels = [
+    channels = [
         # replace with real channel IDs
-        "UCrPseYLGpNygVi34QpGNqpA",
+        #"UCrPseYLGpNygVi34QpGNqpA", #ludwig
+        "UCAuUUnT6oDeKwE6v1NGQxug", #TED Ed
     ]
-    videos = get_latest_videos(sample_channels, max_results_per_channel=3)
+    videos = get_latest_videos(channels, max_results_per_channel=3)
     for v in videos:
         print(v["title"], v["link"])
         t = get_transcript(v["video_id"]) or "(no transcript)"
