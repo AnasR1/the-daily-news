@@ -4,7 +4,7 @@ This module provides a unified, object-oriented interface for fetching videos
 and transcripts from YouTube channels using RSS feeds and the YouTube Transcript API.
 
 Classes:
-- YouTubeScraper: Main class for YouTube operations
+- YouTubeScraper: Main scraper class for YouTube operations
 - ChannelVideo: Pydantic model for channel videos
 - Transcript: Pydantic model for transcripts
 
@@ -27,6 +27,8 @@ from youtube_transcript_api import (
     VideoUnavailable,
 )
 
+from app.scrapers.base import BaseScraper
+
 logger = logging.getLogger(__name__)
 
 
@@ -46,14 +48,39 @@ class Transcript(BaseModel):
     text: str
 
 
-class YouTubeScraper:
-    """Unified interface for fetching YouTube videos and transcripts."""
+class YouTubeScraper(BaseScraper):
+    """Scraper for fetching YouTube videos and transcripts."""
 
     RSS_CHANNEL_FEED = "https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}"
     YOUTUBE_BASE_URL = "https://www.youtube.com"
     CHANNEL_ID_PATTERN = r"(?:youtube\.com|youtu\.be)/channel/([a-zA-Z0-9_-]+)"
     BROWSE_ID_PATTERN = r'"browseId":"(UC[a-zA-Z0-9_-]+)"'
     REQUEST_TIMEOUT = 10
+
+    def __init__(self, channel_ids: List[str], max_results_per_channel: int = 5):
+        """Initialize YouTubeScraper.
+        
+        Args:
+            channel_ids: List of YouTube channel IDs to scrape
+            max_results_per_channel: Maximum videos to fetch per channel
+        """
+        self.channel_ids = channel_ids
+        self.max_results_per_channel = max_results_per_channel
+
+    @property
+    def name(self) -> str:
+        """Return the scraper name."""
+        return "youtube"
+
+    def run(self) -> List[tuple[ChannelVideo, Optional[Transcript]]]:
+        """Execute the scraper.
+        
+        Returns:
+            List of tuples containing ChannelVideo and optional Transcript
+        """
+        return self.get_videos_with_transcripts(
+            self.channel_ids, self.max_results_per_channel
+        )
 
     @staticmethod
     def get_channel_id_from_url(url: str) -> Optional[str]:
@@ -311,38 +338,3 @@ class YouTubeScraper:
         return [
             (video, YouTubeScraper.get_transcript(video.video_id)) for video in videos
         ]
-
-
-if __name__ == "__main__":
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    )
-
-    # Example: using direct channel IDs
-    urls = [
-        "https://www.youtube.com/@ludwig",
-    ]
-
-    channel_ids = [
-        YouTubeScraper.get_channel_id_from_url(url)
-        for url in urls
-        if YouTubeScraper.get_channel_id_from_url(url)
-    ]
-
-    videos_with_transcripts = YouTubeScraper.get_videos_with_transcripts(
-        channel_ids, max_results_per_channel=3
-    )
-
-    for video, transcript in videos_with_transcripts:
-        print(f"\n{video.title}")
-        print(f"URL: {video.url}")
-        print(f"Video ID: {video.video_id}")
-        if video.published_at:
-            print(f"Published: {video.published_at}")
-
-        if transcript:
-            preview = transcript.text[:500].replace("\n", " ")
-            print(f"Transcript: {preview}...")
-        else:
-            print("Transcript: (not available)")

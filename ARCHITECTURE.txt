@@ -1,0 +1,104 @@
+SCRAPER PIPELINE ARCHITECTURE
+==============================
+
+┌─────────────────────────────────────────────────────────────────┐
+│                     config/channels.txt                         │
+│          (YouTube channels, one per line, with comments)        │
+└─────────────────┬───────────────────────────────────────────────┘
+                  │
+                  ▼
+┌─────────────────────────────────────────────────────────────────┐
+│              app/scrapers/__main__.py (Entry Point)             │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │ 1. Load channels from config/channels.txt                   ││
+│  │ 2. Resolve URLs to channel IDs                              ││
+│  │ 3. Create ScraperRunner instance                            ││
+│  │ 4. Register all scrapers                                    ││
+│  │ 5. Execute run_all()                                        ││
+│  └─────────────────────────────────────────────────────────────┘│
+└─────────────────┬───────────────────────────────────────────────┘
+                  │
+                  ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                  ScraperRunner (runner.py)                      │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │ - register(scraper: BaseScraper)                            ││
+│  │ - run(name: str) -> results                                 ││
+│  │ - run_all() -> dict[name] = results                         ││
+│  │ - list_scrapers() -> [names]                                ││
+│  └─────────────────────────────────────────────────────────────┘│
+└──────────────────┬──────────────────────────────────────────────┘
+                   │
+        ┌──────────┼──────────┐
+        ▼          ▼          ▼
+    ┌────────┐ ┌────────┐ ┌────────┐
+    │ YouTube│ │  RSS   │ │ Twitter│  ← Multiple scrapers
+    │ (Done) │ │(Future)│ │(Future)│
+    └────────┘ └────────┘ └────────┘
+
+INHERITANCE HIERARCHY
+=====================
+
+BaseScraper (ABC)
+├── @property name: str (abstract)
+├── run() -> Any (abstract)
+│
+└── YouTubeScraper (implemented)
+    ├── name = "youtube"
+    ├── run() fetches videos & transcripts
+    └── Methods for URL resolution
+
+ADD NEW SCRAPERS
+================
+
+1. Create class inheriting from BaseScraper
+2. Implement name property (unique identifier)
+3. Implement run() method (scraping logic)
+4. Register with runner
+5. Pipeline automatically includes in run_all()
+
+No modification of existing code needed!
+
+DATA FLOW
+=========
+
+config/channels.txt
+        │
+        ├─ Parse lines (skip #, empty)
+        │
+        ├─ Resolve URLs to IDs
+        │  (https://youtube.com/@user → UC...)
+        │
+        ├─ Create YouTubeScraper(channel_ids)
+        │
+        ├─ Register with ScraperRunner
+        │
+        ├─ runner.run_all()
+        │
+        ├─ For each registered scraper:
+        │  ├─ scraper.run()
+        │  ├─ Fetch data
+        │  ├─ Handle errors gracefully
+        │  └─ Collect results
+        │
+        └─ Display aggregated results
+
+ERROR HANDLING
+==============
+
+ScraperRunner.run_all():
+┌────────────────────────────────────────┐
+│ For each scraper:                      │
+│ ├─ Try: result = scraper.run()         │
+│ ├─ Except: Log error, continue         │
+│ └─ If success: Add to results          │
+│                                        │
+│ Return: {name: results} (completed)    │
+│         Excludes failed scrapers       │
+└────────────────────────────────────────┘
+
+Advantages:
+✓ One scraper failure doesn't break pipeline
+✓ Full error logging for debugging
+✓ Partial results still usable
+✓ Production-ready robustness

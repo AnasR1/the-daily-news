@@ -1,6 +1,18 @@
 """Scrapers package for the AI News Aggregator.
 
-This package will contain per-source scrapers (YouTube, RSS, etc.).
+This package contains per-source scrapers (YouTube, RSS, etc.) and the runner
+for executing them. All scrapers inherit from BaseScraper and are executed
+via the ScraperRunner.
 """
 
-__all__ = ["youtube_scraper"]
+from app.scrapers.base import BaseScraper
+from app.scrapers.runner import ScraperRunner
+from app.scrapers.youtube_scraper import YouTubeScraper, ChannelVideo, Transcript
+
+__all__ = [
+    "BaseScraper",
+    "ScraperRunner",
+    "YouTubeScraper",
+    "ChannelVideo",
+    "Transcript",
+]
