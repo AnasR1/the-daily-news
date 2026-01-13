@@ -1,26 +1,16 @@
-"""Main entry point for running scrapers.
-
-This module demonstrates how to use the ScraperRunner to execute scrapers.
-"""
-import logging
+"""Main entry point for running scrapers."""
 import sys
 from pathlib import Path
 
 from app.scrapers.runner import ScraperRunner
 from app.scrapers.youtube_scraper import YouTubeScraper
+from app.logging_config import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 def load_channels_from_config(config_path: str) -> list[str]:
-    """Load channel URLs from config file.
-    
-    Args:
-        config_path: Path to the channels config file
-        
-    Returns:
-        List of channel URLs (non-comment, non-empty lines)
-    """
+    """Load channel URLs from config file."""
     config = Path(config_path)
     
     if not config.exists():
@@ -30,7 +20,6 @@ def load_channels_from_config(config_path: str) -> list[str]:
     with open(config, 'r') as f:
         for line in f:
             line = line.strip()
-            # Skip empty lines and comments
             if line and not line.startswith('#'):
                 channels.append(line)
     
@@ -38,14 +27,7 @@ def load_channels_from_config(config_path: str) -> list[str]:
 
 
 def resolve_channel_ids(channel_urls: list[str]) -> list[str]:
-    """Resolve channel URLs to channel IDs.
-    
-    Args:
-        channel_urls: List of YouTube channel URLs
-        
-    Returns:
-        List of resolved channel IDs
-    """
+    """Resolve channel URLs to channel IDs."""
     channel_ids = []
     
     for url in channel_urls:
@@ -63,13 +45,7 @@ def resolve_channel_ids(channel_urls: list[str]) -> list[str]:
 
 
 def main():
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    )
-    
     try:
-        # Load channels from config
         config_path = "config/channels.txt"
         logger.info(f"Loading channels from {config_path}")
         channel_urls = load_channels_from_config(config_path)

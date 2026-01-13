@@ -1,17 +1,10 @@
-"""Base scraper interface for extensibility.
-
-This module provides the abstract base class for all scrapers,
-ensuring consistent interface and enabling easy addition of new scraper types.
-"""
+"""Base scraper interface for extensibility."""
 from abc import ABC, abstractmethod
 from typing import Any, List
 
 
 class BaseScraper(ABC):
-    """Abstract base class for all scrapers.
-    
-    Subclasses must implement the run() method to define their scraping behavior.
-    """
+    """Abstract base class for all scrapers."""
 
     @property
     @abstractmethod
