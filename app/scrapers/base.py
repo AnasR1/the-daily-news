@@ -14,9 +14,5 @@ class BaseScraper(ABC):
 
     @abstractmethod
     def run(self, *args, **kwargs) -> Any:
-        """Execute the scraper.
-        
-        Returns:
-            Scraper-specific results
-        """
+        """Execute the scraper."""
         pass
