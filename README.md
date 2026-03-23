@@ -96,21 +96,13 @@ sources:
 
 ## 📋 Roadmap
 
+- [ ] AI Summarization
+- [ ] Automatic email delviery
 - [ ] Web UI for source management
 - [ ] Multi-language support
 - [ ] Advanced filtering and categorization
 - [ ] Integration with multiple notification channels
 - [ ] Custom summary templates
-
----
-
-## 📝 License
-
-This project is open source and available under the MIT License.
-
----
-
-## 🤝 Contributing
 
 Contributions are welcome! Feel free to submit issues or pull requests to help improve The Daily News.
 
